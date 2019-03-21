@@ -47,11 +47,12 @@ rm -rf /etc/update-motd.d/99-one-click
 #disable ufw since digital ocean firewall is enabled
 sudo ufw disable
 
-cat > /etc/init/startcontainersatstartup.conf << EOL
-start on startup
-task
-exec /root/startcontainers.sh
-EOL
+#add a startup script
+#at > /etc/init/startcontainersatstartup.conf << EOL
+#start on startup
+#task
+#exec /root/startcontainers.sh
+#EOL
 
 # MOUNT VOLUME FOR PERSISTEN STORAGE IN /mnt/applicationdata
 # Create a mount point for your volume:
