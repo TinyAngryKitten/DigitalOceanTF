@@ -7,7 +7,7 @@ resource "digitalocean_droplet" "devserver" {
     image = "docker-18-04"
     name = "devserver"
     region = "lon1"
-    size = "s-1vcpu-1gb"
+    size = "s-1vcpu-2gb"
     monitoring = true
     resize_disk = false
     private_networking = true
@@ -43,6 +43,19 @@ resource "digitalocean_volume_attachment" "devserver" {
 resource "digitalocean_floating_ip" "devserver" {
   droplet_id = "${digitalocean_droplet.devserver.id}"
   region     = "${digitalocean_droplet.devserver.region}"
+}
+
+resource "digitalocean_domain" "devserver" {
+  name       = "tinyangrykitten.tk"
+  ip_address = "${digitalocean_droplet.devserver.ipv4_address}"
+}
+
+# Add a record to the domain
+resource "digitalocean_record" "devserverSubRecord" {
+  domain = "${digitalocean_domain.devserver.name}"
+  type   = "A"
+  name   = "a"
+  value  = "${digitalocean_droplet.devserver.ipv4_address}"
 }
 
 resource "digitalocean_firewall" "devserver" {
