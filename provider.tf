@@ -1,11 +1,11 @@
 variable "tokenfile" {
-    type = "string"
-    default = "/Users/sander/Keys/dotoken"
+    type = string
+    default = "/Users/sanderhoyvik/Keys/dotoken"
 }
 
 variable "privatekey" {
     type = "string"
-    default = "/Users/sander/Keys/digitalocean"
+    default = "/Users/sanderhoyvik/Keys/digitalocean"
 }
 
 provider "digitalocean" {

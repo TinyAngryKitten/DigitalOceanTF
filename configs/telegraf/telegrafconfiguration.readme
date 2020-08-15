@@ -1,0 +1,3 @@
+configuration are located at outputs.influxdb and mqtt_consumer
+remember to configure database = "sensordata" field if db name exchanges
+username and password should be changed

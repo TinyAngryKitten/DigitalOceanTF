@@ -1,8 +1,3 @@
-data "digitalocean_volume" "devserver" {
-  region = "lon1"
-  name = "applicationdata"
-}
-
 resource "digitalocean_droplet" "devserver" {
     image = "docker-18-04"
     name = "devserver"
@@ -15,17 +10,25 @@ resource "digitalocean_droplet" "devserver" {
       "26:8b:ac:ad:c9:5e:a9:48:49:b4:76:d8:bc:c4:f7:cd",
       "fe:cc:13:74:b8:d4:3a:08:d1:2b:a3:fb:00:aa:c2:72"
     ]
+    connection {
+          host = self.ipv4_address
+          user = "root"
+          type = "ssh"
+          private_key = "${file(var.privatekey)}"
+          timeout = "2m"
+      }
 
   provisioner "file" {
    source      = "scripts/startdockercontainers.sh"
    destination = "/root/startcontainers.sh"
   }
-
-connection {
-      user = "root"
-      type = "ssh"
-      private_key = "${file(var.privatekey)}"
-      timeout = "2m"
+  provisioner "file" {
+   source      = "configs/influxdb.conf"
+   destination = "/root/influxdb/influxdb.conf"
+  }
+  provisioner "file" {
+   source      = "docker-compose.yml"
+   destination = "/root/docker-compose.yml"
   }
 
 provisioner "remote-exec" {
@@ -35,9 +38,10 @@ provisioner "remote-exec" {
   }
 }
 
-resource "digitalocean_volume_attachment" "devserver" {
-  droplet_id = "${digitalocean_droplet.devserver.id}"
-  volume_id  = "${data.digitalocean_volume.devserver.id}"
+data "digitalocean_volume" "devserver" {
+  region = "lon1"
+  name = "data"
+  initial_filesystem_type = "ext4"
 }
 
 resource "digitalocean_floating_ip" "devserver" {
@@ -45,60 +49,44 @@ resource "digitalocean_floating_ip" "devserver" {
   region     = "${digitalocean_droplet.devserver.region}"
 }
 
-resource "digitalocean_domain" "devserver" {
-  name       = "tinyangrykitten.tk"
-  ip_address = "${digitalocean_droplet.devserver.ipv4_address}"
-}
-
-# Add a record to the domain
-resource "digitalocean_record" "devserverSubRecord" {
-  domain = "${digitalocean_domain.devserver.name}"
-  type   = "A"
-  name   = "a"
-  value  = "${digitalocean_droplet.devserver.ipv4_address}"
-}
-
 resource "digitalocean_firewall" "devserver" {
   name = "devserverfw"
 
   droplet_ids = ["${digitalocean_droplet.devserver.id}"]
 
-  inbound_rule = [
-    {
+  inbound_rule {
       protocol           = "tcp"
       port_range         = "22"
       source_addresses   = ["0.0.0.0/0", "::/0"]
-    },
-    {
+    }
+  inbound_rule {
       protocol           = "tcp"
       port_range         = "6666"
       source_addresses   = ["0.0.0.0/0", "::/0"]
-    },
-    {
+    }
+  inbound_rule {
       protocol           = "tcp"
       port_range         = "8081"
       source_addresses   = ["0.0.0.0/0", "::/0"]
-    },
-    {
+    }
+
+  inbound_rule {
       protocol           = "icmp"
       source_addresses   = ["0.0.0.0/0", "::/0"]
-    },
-  ]
+    }
 
-  outbound_rule = [
-    {
+  outbound_rule {
       protocol                = "tcp"
       port_range              = "1-65535"
       destination_addresses   = ["0.0.0.0/0", "::/0"]
-    },
-    {
+    }
+  outbound_rule {
       protocol                = "udp"
       port_range              = "1-65535"
       destination_addresses   = ["0.0.0.0/0", "::/0"]
-    },
-    {
+    }
+  outbound_rule {
       protocol                = "icmp"
       destination_addresses   = ["0.0.0.0/0", "::/0"]
-    },
-  ]
+    }
 }

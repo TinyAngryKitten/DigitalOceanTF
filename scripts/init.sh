@@ -5,7 +5,6 @@ sudo add-apt-repository universe -y
 sudo apt-get update -y
 
 #HARDENING
-
 #secure shared memory
 echo "tmpfs /run/shm tmpfs defaults,noexec,nosuid 0 0" >> /etc/fstab
 
@@ -13,7 +12,7 @@ echo "tmpfs /run/shm tmpfs defaults,noexec,nosuid 0 0" >> /etc/fstab
 #sed -i "s/.*PubkeyAuthentication.*/PubkeyAuthentication yes/g" /etc/ssh/sshd_config
 sed -i "s/.*PasswordAuthentication.*/PasswordAuthentication no/g" /etc/ssh/sshd_config
 #sed -i "s/.*PermitRootLogin.*/PermitRootLogin no/g" /etc/ssh/sshd_config
-#sed -i "s/.*AllowUsers.*/AllowUsers $USER_NAME/g" /etc/ssh/sshd_config
+sed -i "s/.*AllowUsers.*/AllowUsers $USER_NAME/g" /etc/ssh/sshd_config
 
 sudo apt install -y fail2ban
 
@@ -56,16 +55,16 @@ sudo ufw disable
 
 # MOUNT VOLUME FOR PERSISTEN STORAGE IN /mnt/applicationdata
 # Create a mount point for your volume:
-mkdir -p /mnt/applicationdata
+mkdir -p /mnt/data
 
 # Mount your volume at the newly-created mount point:
-mount -o discard,defaults,noatime /dev/disk/by-id/scsi-0DO_Volume_applicationdata /mnt/applicationdata
+mount -o discard,defaults,noatime /dev/disk/by-id/scsi-0DO_Volume_data /mnt/data
 
 # Change fstab so the volume will be mounted after a reboot
-echo '/dev/disk/by-id/scsi-0DO_Volume_applicationdata /mnt/applicationdata ext4 defaults,nofail,discard 0 0' | sudo tee -a /etc/fstab
+echo '/dev/disk/by-id/scsi-0DO_Volume_data /mnt/data ext4 defaults,nofail,discard 0 0' | sudo tee -a /etc/fstab
 
 #make sure this droplet has permission to edit the volume
-sudo chown -R root:root /mnt/applicationdata
-sudo chmod -R o+xwr /mnt/applicationdata
+sudo chown -R root:root /mnt/data
+sudo chmod -R o+xwr /mnt/data
 
-sudo chmod o+x /root/startcontainers.sh
+mv /root/* /mnt/data/

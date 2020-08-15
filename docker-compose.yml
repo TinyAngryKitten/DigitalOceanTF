@@ -1,0 +1,33 @@
+version: "3.8"
+services:
+  telegraf:
+    image: telegraf
+    volumes:
+      - /mnt/data/telegraf:/etc/telegraf
+  image: eclipse-mosquitto
+  ports:
+    - target: 1883
+      published: 1883
+    - target: 9001
+      published: 9001
+  volumes:
+    - /mnt/data/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+  chronograf:
+    image: chronograf:1.8
+    ports:
+      - target: 8888
+        published: 8888
+    volumes:
+      - /mnt/data/chronograf:/var/lib/chronograf
+  influx:
+    image: influxdb
+    ports:
+      - target: 8086
+        published: 8086
+    environment:
+      INFLUXDB_DB: ${INFLUXDB_DB}
+      INFLUXDB_USER: ${INFLUXDB_USER}
+      INFLUXDB_USER_PASSWORD: ${INFLUXDB_USER_PASSWORD}
+    volumes:
+      - /mnt/data/influxdb/data:/var/lib/influxdb
+      - /mnt/data/influxdb:/etc/influxdb
