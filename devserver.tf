@@ -17,14 +17,9 @@ resource "digitalocean_droplet" "devserver" {
           private_key = "${file(var.privatekey)}"
           timeout = "2m"
       }
-
   provisioner "file" {
-   source      = "scripts/startdockercontainers.sh"
-   destination = "/root/startcontainers.sh"
-  }
-  provisioner "file" {
-   source      = "configs/influxdb.conf"
-   destination = "/root/influxdb/influxdb.conf"
+   source      = "configs"
+   destination = "/root/configs"
   }
   provisioner "file" {
    source      = "docker-compose.yml"
@@ -61,15 +56,24 @@ resource "digitalocean_firewall" "devserver" {
     }
   inbound_rule {
       protocol           = "tcp"
-      port_range         = "6666"
+      port_range         = "1883"
       source_addresses   = ["0.0.0.0/0", "::/0"]
     }
   inbound_rule {
       protocol           = "tcp"
-      port_range         = "8081"
+      port_range         = "9001"
       source_addresses   = ["0.0.0.0/0", "::/0"]
     }
-
+  inbound_rule {
+      protocol           = "tcp"
+      port_range         = "8888"
+      source_addresses   = ["0.0.0.0/0", "::/0"]
+    }
+  inbound_rule {
+      protocol           = "tcp"
+      port_range         = "8086"
+      source_addresses   = ["0.0.0.0/0", "::/0"]
+    }
   inbound_rule {
       protocol           = "icmp"
       source_addresses   = ["0.0.0.0/0", "::/0"]
