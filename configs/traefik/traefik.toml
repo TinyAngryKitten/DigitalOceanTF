@@ -1,0 +1,33 @@
+debug = false
+
+logLevel = "ERROR"
+defaultEntryPoints = ["https","http"]
+
+[entryPoints]
+  [entryPoints.http]
+  address = ":80"
+    [entryPoints.http.redirect]
+    entryPoint = "https"
+  [entryPoints.https]
+  address = ":443"
+  [entryPoints.https.tls]
+
+  [http.middlewares]
+    [http.middlewares.test-auth.basicAuth]
+      users = [
+        "TinyAngryKitten:$2y$13$3JtxSFFvGKGEByRpczNZbuK2nlXxFUSW0CdnP9hCUzDa0JZlKqulO"
+      ]
+[retry]
+
+[docker]
+endpoint = "unix:///var/run/docker.sock"
+domain = "tinyangrykitten.dev"
+watch = true
+exposedByDefault = false
+[acme]
+email = "tinyangrykitten@tinyangrykitten.dev"
+storage = "acme.json"
+entryPoint = "https"
+onHostRule = true
+[acme.httpChallenge]
+entryPoint = "http"

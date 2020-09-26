@@ -1,0 +1,9 @@
+stream
+  |from()
+    .measurement('humidity')
+  |alert()
+    .crit(lambda: "value" > 80)
+    .message('{{ .Time }}: Luft fuktighet er over 33 grader')
+    .mqtt('notifications')
+    .qos(0)
+    .stateChangesOnly()

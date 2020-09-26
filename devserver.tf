@@ -17,10 +17,16 @@ resource "digitalocean_droplet" "devserver" {
           private_key = "${file(var.privatekey)}"
           timeout = "2m"
       }
+
   provisioner "file" {
    source      = "configs"
    destination = "/root/configs"
   }
+  provisioner "file" {
+   source      = ".env"
+   destination = "/root/.env"
+  }
+
   provisioner "file" {
    source      = "docker-compose.yml"
    destination = "/root/docker-compose.yml"
@@ -36,7 +42,6 @@ provisioner "remote-exec" {
 data "digitalocean_volume" "devserver" {
   region = "lon1"
   name = "data"
-  initial_filesystem_type = "ext4"
 }
 
 resource "digitalocean_floating_ip" "devserver" {
@@ -49,6 +54,16 @@ resource "digitalocean_firewall" "devserver" {
 
   droplet_ids = ["${digitalocean_droplet.devserver.id}"]
 
+  inbound_rule {
+      protocol           = "tcp"
+      port_range         = "443"
+      source_addresses   = ["0.0.0.0/0", "::/0"]
+    }
+    inbound_rule {
+        protocol           = "tcp"
+        port_range         = "80"
+        source_addresses   = ["0.0.0.0/0", "::/0"]
+      }
   inbound_rule {
       protocol           = "tcp"
       port_range         = "22"

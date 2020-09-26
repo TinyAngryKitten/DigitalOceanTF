@@ -1,26 +1,78 @@
-version: "3.8"
+version: "3.3"
 services:
+  splunk:
+    image: splunk/splunk:latest
+    ports:
+      - 8000:8000
+    environment:
+      SPLUNK_START_ARGS: --accept-license
+      SPLUNK_PASSWORD: SomePassword123
+    labels:
+      - "traefik.backend=splunkbackend"
+      - "traefik.docker.network=root_default"
+      - "traefik.frontend.rule=Host:splunk.tinyangrykitten.dev"
+      - "traefik.enable=true"
+      - "traefik.port=8000"
+  kapacitor:
+    image: kapacitor:1.5-alpine
+    volumes:
+      - /mnt/data/kapacitor:/var/lib/kapacitor
+      - /root/configs/kapacitor/ticks:/home/kapacitor
+      - /root/configs/kapacitor/kapacitor.conf:/etc/kapacitor/kapacitor.conf
+    environment:
+      KAPACITOR_INFLUXDB_0_URLS_0: http://influxdb:8086
+    labels:
+      - "traefik.backend=kapacitorbackend"
+      - "traefik.docker.network=root_default"
+      - "traefik.frontend.rule=Host:kapacitor.tinyangrykitten.dev"
+      - "traefik.enable=true"
+      - "traefik.port=9092"
+  traefik:
+    image: traefik:1.7-alpine
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /root/configs/traefik/traefik.toml:/traefik.toml
+      - /root/configs/traefik/acme.json:/acme.json
   telegraf:
     image: telegraf
+    restart: always
     volumes:
-      - /mnt/data/telegraf:/etc/telegraf
-  image: eclipse-mosquitto
-  ports:
-    - target: 1883
-      published: 1883
-    - target: 9001
-      published: 9001
-  volumes:
-    - /mnt/data/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - /root/configs/telegraf:/etc/telegraf
+  mosquitto:
+    image: eclipse-mosquitto
+    restart: always
+    ports:
+      - target: 1883
+        published: 1883
+      - target: 9001
+        published: 9001
+    labels:
+      - "traefik.backend=mosquittobackend"
+      - "traefik.docker.network=root_default"
+      - "traefik.frontend.rule=Host:mqtt.tinyangrykitten.dev"
+      - "traefik.enable=true"
+      - "traefik.port=9001"
+    volumes:
+      - /root/configs/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - /root/configs/mosquitto/logs:/mosquitto/config/logs
   chronograf:
     image: chronograf:1.8
-    ports:
-      - target: 8888
-        published: 8888
+    restart: always
     volumes:
       - /mnt/data/chronograf:/var/lib/chronograf
+    labels:
+      - "traefik.backend=chronografbackend"
+      - "traefik.docker.network=root_default"
+      - "traefik.frontend.rule=Host:chronograf.tinyangrykitten.dev"
+      - "traefik.enable=true"
+      - "traefik.port=8888"
   influx:
     image: influxdb
+    restart: always
     ports:
       - target: 8086
         published: 8086
@@ -29,5 +81,5 @@ services:
       INFLUXDB_USER: ${INFLUXDB_USER}
       INFLUXDB_USER_PASSWORD: ${INFLUXDB_USER_PASSWORD}
     volumes:
-      - /mnt/data/influxdb/data:/var/lib/influxdb
-      - /mnt/data/influxdb:/etc/influxdb
+      - /mnt/data/influxdb:/var/lib/influxdb
+      - /root/configs/influxdb:/etc/influxdb

@@ -1,0 +1,9 @@
+stream
+  |from()
+    .measurement('temp')
+  |alert()
+    .crit(lambda: "value" > 33)
+    .message('{{ .Time }}: Temperaturen er over 33 grader')
+    .mqtt('notifications')
+    .qos(0)
+    .stateChangesOnly()

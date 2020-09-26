@@ -45,26 +45,20 @@ sudo apt install -y git
 rm -rf /etc/update-motd.d/99-one-click
 #disable ufw since digital ocean firewall is enabled
 sudo ufw disable
-
-#add a startup script
-#at > /etc/init/startcontainersatstartup.conf << EOL
-#start on startup
-#task
-#exec /root/startcontainers.sh
-#EOL
-
-# MOUNT VOLUME FOR PERSISTEN STORAGE IN /mnt/applicationdata
+# MOUNT VOLUME FOR PERSISTEN STORAGE IN /mnt/data
+# Create a mount point for your volume:
 # Create a mount point for your volume:
 mkdir -p /mnt/data
-
 # Mount your volume at the newly-created mount point:
 mount -o discard,defaults,noatime /dev/disk/by-id/scsi-0DO_Volume_data /mnt/data
-
 # Change fstab so the volume will be mounted after a reboot
 echo '/dev/disk/by-id/scsi-0DO_Volume_data /mnt/data ext4 defaults,nofail,discard 0 0' | sudo tee -a /etc/fstab
 
 #make sure this droplet has permission to edit the volume
-sudo chown -R root:root /mnt/data
+sudo chown -R $USER_NAME:$USER_NAME /mnt/data
 sudo chmod -R o+xwr /mnt/data
 
-mv /root/* /mnt/data/
+echo "">> /root/configs/traefik/acme.json && chmod 600 /root/configs/traefik/acme.json
+
+cd /root
+sudo docker-compose up -d
