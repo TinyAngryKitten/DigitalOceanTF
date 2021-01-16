@@ -10,3 +10,4 @@
 configs/telegraf/telegraf.conf
 .env
 .env
+.DS_Store
