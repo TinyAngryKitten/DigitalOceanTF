@@ -1,18 +1,5 @@
 version: "3.3"
 services:
-  splunk:
-    image: splunk/splunk:latest
-    ports:
-      - 8000:8000
-    environment:
-      SPLUNK_START_ARGS: --accept-license
-      SPLUNK_PASSWORD: SomePassword123
-    labels:
-      - "traefik.backend=splunkbackend"
-      - "traefik.docker.network=root_default"
-      - "traefik.frontend.rule=Host:splunk.tinyangrykitten.dev"
-      - "traefik.enable=true"
-      - "traefik.port=8000"
   kapacitor:
     image: kapacitor:1.5-alpine
     volumes:
