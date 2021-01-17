@@ -20,6 +20,8 @@ services:
     ports:
       - 80:80
       - 443:443
+    command:
+      - "--entrypoints.mqtt.address=:1883"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /root/configs/traefik/traefik.toml:/traefik.toml
@@ -40,9 +42,14 @@ services:
     labels:
       - "traefik.backend=mosquittobackend"
       - "traefik.docker.network=root_default"
-      - "traefik.frontend.rule=Host:mqtt.tinyangrykitten.dev"
+      - "traefik.frontend.rule=Host:mqtts.tinyangrykitten.dev"
       - "traefik.enable=true"
       - "traefik.port=9001"
+
+      - "traefik.tcp.services.mqtt.loadbalancer.server.port=1883"
+      - "traefik.tcp.routers.tcpr_mqtt.entrypoints=mqtt"
+      - "traefik.tcp.routers.tcpr_mqtt.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.tcpr_mqtt.service=mqtt"
     volumes:
       - /root/configs/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
       - /root/configs/mosquitto/logs:/mosquitto/config/logs
